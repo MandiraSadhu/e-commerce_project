@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     
     'products.apps.ProductsConfig',
     'rest_framework',
+    'rest_framework_simplejwt',
 
     'django_celery_results'
 ]
@@ -168,6 +169,14 @@ VIDEO_UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'videos/')
 if not os.path.exists(VIDEO_UPLOAD_PATH):
     os.makedirs(VIDEO_UPLOAD_PATH)
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
