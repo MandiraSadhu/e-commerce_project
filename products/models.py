@@ -29,6 +29,8 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     video = models.FileField(upload_to='videos/', null=True, blank=True)
+    video_status = models.CharField(max_length=50, default='pending')
+    video_progress = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title

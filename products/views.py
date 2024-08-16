@@ -1,8 +1,9 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from .models import Category, Product, UserProfile
-from .serializers import CategorySerializer, ProductSerializer
+from .serializers import CategorySerializer, ProductSerializer, GenerateProductsSerializer
 from .permissions import IsAdminOrStaff, IsAdmin
 # from .utils import encrypt_data, decrypt_data
 
@@ -11,9 +12,14 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, FormView, RedirectView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import UserRegistrationForm, UserLoginForm
+from django.contrib import messages
 
 from .utils import AESCipher
 import os
+
+from .tasks import generate_dummy_products
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
 
 class RegisterView(CreateView):
     form_class = UserRegistrationForm
@@ -22,11 +28,13 @@ class RegisterView(CreateView):
 
     def form_valid(self, form):
         user = form.save()
+        messages.success(self.request, 'Registration successful!')
         return super().form_valid(form)
     
     def form_invalid(self, form):
         print(form.errors) 
-        return super().form_invalid(form)
+        messages.error(self.request, 'Registration failed!')
+        return self.render_to_response(self.get_context_data(form=form))
 
 class LoginView(FormView):
     form_class = UserLoginForm
@@ -39,8 +47,10 @@ class LoginView(FormView):
         user = authenticate(self.request, username=username, password=password)
         if user is not None:
             login(self.request, user)
+            messages.success(self.request, 'Login successful!')
             return super().form_valid(form)
         else:
+            messages.error(self.request, 'Login failed. Please check your username and password.')
             return self.form_invalid(form)
 
 class LogoutView(RedirectView):
@@ -48,6 +58,7 @@ class LogoutView(RedirectView):
 
     def get(self, request, *args, **kwargs):
         logout(request)
+        messages.info(self.request, 'You have been logged out.')
         return super().get(request, *args, **kwargs)
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -171,3 +182,23 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.delete()
+
+class GenerateProductsView(generics.GenericAPIView):
+    serializer_class = GenerateProductsSerializer
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        categories = Category.objects.all()
+        categories_data = [{"id": category.id, "name": category.name} for category in categories]
+        return Response({"categories": categories_data})
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            num_products = serializer.validated_data['num_products']
+            generate_dummy_products.delay(num_products)
+            return Response(
+                {"message": f"Task to generate {num_products} products has been initiated."},
+                status=status.HTTP_202_ACCEPTED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

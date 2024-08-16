@@ -2,5 +2,11 @@
 {% block title %}dashboard{% endblock %}
 
 {% block content %}
-<h2>hi</h2>
+    <form method="post" action="{% url 'generate-products' %}">
+        {% csrf_token %}
+        <label for="num_products">Number of Products:</label>
+        <input type="number" name="num_products" id="num_products" min="1" required>
+        <br/>
+        <button type="submit">Generate Products</button>
+    </form>
 {% endblock %}

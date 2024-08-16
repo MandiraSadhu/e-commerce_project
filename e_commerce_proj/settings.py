@@ -14,6 +14,7 @@ from pathlib import Path
 
 import os
 from datetime import timedelta
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +33,13 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -41,7 +49,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    'products',
+    'products.apps.ProductsConfig',
+    'rest_framework',
+
+    'django_celery_results'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +64,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+# MESSAGE_TAGS = {
+#     messages.DEBUG: 'debug',
+#     messages.INFO: 'info',
+#     messages.SUCCESS: 'success',
+#     messages.WARNING: 'warning',
+#     messages.ERROR: 'danger',
+# }
 
 ROOT_URLCONF = 'e_commerce_proj.urls'
 
@@ -154,3 +174,12 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
 }
+
+
+# Celery Configuration Options
+CELERY_BROKER_URL = 'amqp://localhost'  
+CELERY_RESULT_BACKEND = 'django-db'  
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
