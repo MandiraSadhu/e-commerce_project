@@ -1,0 +1,41 @@
+{% extends 'products/base.html' %}
+{% block title %}Agent dashboard{% endblock %}
+
+{% block content %}
+<h1>Agent Dashboard</h1>
+
+<h2>Your Products</h2>
+<ul>
+    {% for product in products %}
+        <li>{{ product.name }} - Status: {{ product.status }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Pending Products</h2>
+<ul>
+    {% for product in pending_products %}
+        <li>{{ product.name }} - Status: {{ product.status }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Approved Products</h2>
+<ul>
+    {% for product in approved_products %}
+        <li>{{ product.name }} - Status: {{ product.status }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Rejected Products</h2>
+<ul>
+    {% for product in rejected_products %}
+        <li>{{ product.name }} - Status: {{ product.status }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Cancelled Products</h2>
+<ul>
+    {% for product in cancelled_products %}
+        <li>{{ product.name }} - Status: {{ product.status }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
